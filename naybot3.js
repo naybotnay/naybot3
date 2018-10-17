@@ -15,7 +15,6 @@ client.on('ready', () => {
 });
 
 const prefix = "!!"
-var queue = [];
 var isPlaying = false;
 var dispatcher = null;
 var voiceChannel = null;
