@@ -178,13 +178,11 @@ function add_to_queue(strID, message) {
     }
 }
 
-function search_video(query, callback) {
+
+function search_video(query, cb) {
     request("https://www.googleapis.com/youtube/v3/search?part=id&type=video&q=" + encodeURIComponent(query) + "&key=" + yt_api_key, function(error, response, body) {
         var json = JSON.parse(body);
-        if (!json.items[0]) callback("3_-a9nVZYjk");
-        else {
-            callback(jsonf.items[0].id.videoId);
-        }
+        cb(json.items[0].id.videoId);
     });
 }
 
