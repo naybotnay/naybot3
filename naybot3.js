@@ -164,7 +164,7 @@ function getID(str, cb) {
     if (isYoutube(str)) {
         cb(getYouTubeID(str));
     } else {
-        search_vsideo(str, function(id) {
+        search_video(str, function(id) {
             cb(id);
         });
     }
