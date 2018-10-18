@@ -210,49 +210,49 @@ client.on('message', function(message) {
     let args = message.content.split(" ").slice(1).join(" ");
     if(message.content.startsWith(prefix + "setNAME")) {
 		        if(message.author.id !== myID) return;
-            if(!args) return message.reply('**The setNAME has been changed to : ${argresult}**');
+            if(!args) return message.reply('-_-');
         client.user.setUsername(args);
-        message.channel.send(':white_check_mark: Done!').then(msg => {
+        message.channel.send('**The setNAME has been changed to : ${argresult}**').then(msg => {
            msg.delete(7000);
           message.delete(7000);
         });
     } else if(message.content.startsWith(prefix + "setT")) {
 		        if(message.author.id !== myID) return;
-            if(!args) return message.reply('**The twitch has been changed to : ${argresult}**');
+            if(!args) return message.reply('-_-');
         client.user.setGame(args , 'https://twitch.tv/brokenklash');
-        message.channel.send(':white_check_mark: Done !').then(msg => {
+        message.channel.send('**The twitch has been changed to : ${argresult}**').then(msg => {
            msg.delete(7000);
           message.delete(7000);
         });
     } else if(message.content.startsWith(prefix + "setP")) {
 				        if(message.author.id !== myID) return;
-            if(!args) return message.reply('**The Playing has been changed to : ${argresult}**');
+            if(!args) return message.reply('-_-');
         client.user.setGame(args);
-        message.channel.send(':white_check_mark: Done !').then(msg => {
+        message.channel.send('**The Playing has been changed to : ${argresult}**').then(msg => {
            msg.delete(7000);
           message.delete(7000);
         });
     } else if(message.content.startsWith(prefix + "setL")) {
 				        if(message.author.id !== myID) return;
-            if(!args) return message.reply('**The listen has been changed to : ${argresult}**');
+            if(!args) return message.reply('-_-');
         client.user.setActivity(args, {type:'LISTENING'});
-        message.channel.send(':white_check_mark: Done !').then(msg => {
+        message.channel.send('**The listen has been changed to : ${argresult}**').then(msg => {
            msg.delete(7000);
           message.delete(7000);
         });
     } else if(message.content.startsWith(prefix + "setW")) {
 				        if(message.author.id !== myID) return;
-            if(!args) return message.reply('**The watch has been changed to : ${argresult}**');
+            if(!args) return message.reply('-_-');
         client.user.setActivity(args, {type:'WATCHING'});
-        message.channel.send(':white_check_mark: Done !').then(msg => {
+        message.channel.send('**The watch has been changed to : ${argresult}**'').then(msg => {
            msg.delete(7000);
           message.delete(7000);
         });
     } else if(message.content.startsWith(prefix + "setAV")) {
 				        if(message.author.id !== myID) return;
         client.user.setAvatar(args);
-        message.channel.send(':white_check_mark: Done !').then(msg => {
-                if(!args) return message.reply('**Change the bot image : ${argresult}**');
+        message.channel.send('**Change the bot image : ${argresult}**').then(msg => {
+                if(!args) return message.reply('-_-');
            msg.delete(7000);
           message.delete(7000);
         });
