@@ -244,7 +244,7 @@ client.on('message', function(message) {
 				        if(message.author.id !== myID) return;
             if(!args) return message.reply('-_-');
         client.user.setActivity(args, {type:'WATCHING'});
-        message.channel.send('**The watch has been changed to : ${argresult}**'').then(msg => {
+        message.channel.send('**The watch has been changed to : ${argresult}**').then(msg => {
            msg.delete(7000);
           message.delete(7000);
         });
