@@ -170,12 +170,14 @@ function getID(str, cb) {
     }
 }
 
-   if (isYoutube(strID)) {
-    guilds[message.guild.id].queue.push(getYoutubeID(strID));
-  } else {
-    guilds[message.guild.id].queue.push(strID);
-  }
+    if (isYoutube(strID)) {
+        guilds[message.guild.id].queue.push(getYouTubeID(strID));
+    } else {
+        guilds[message.guild.id].queue.push(strID);
+    }
 }
+
+function search_video(query, callback) {
 
 
 function search_video(query, cb) {
