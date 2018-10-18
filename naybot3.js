@@ -110,7 +110,7 @@ message.channel.send(`**Now playing** : **( ${videoInfo.title} )** :musical_note
         if (!message.member.voiceChannel) return message.channel.send('يجب أن تكون في روم صـوتـي :microphone2:');
         message.channel.send('**Done , :white_check_mark: **');
         var server = server = servers[message.guild.id];
-        if (message.guild.voiceConnection) message.guild.voiceConnection.dispatcher();
+        if (message.guild.voiceConnection) message.guild.voiceConnection.disconnect();
     }
     else if (mess.startsWith(prefix + 'join')) {
         if (!message.member.voiceChannel) return message.channel.send('يجب أن تكون في روم صـوتـي :microphone2:');
