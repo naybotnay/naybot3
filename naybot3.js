@@ -22,7 +22,7 @@ var servers = [];
 var queue = [];
 var guilds = [];
 var queueNames = [];
-var isPlaying = false;
+var isPlaying = true;
 var dispatcher = null;
 var voiceChannel = null;
 var skipReq = 0;
@@ -66,7 +66,7 @@ message.channel.send(`aded : **( ${videoInfo.title} )** on the list :musical_not
         }
         else {
 
-            isPlaying = true;
+            isPlaying = true; ///////////////\\\\\\\\\\\\\
             getID(args, function(id) {
                 queue.push('placeholder');
                 playMusic(id, message);
@@ -118,7 +118,7 @@ message.channel.send(`**Now playing** : **( ${videoInfo.title} )** :musical_note
     }
     else if (mess.startsWith(prefix + 'play')) {
         if (!message.member.voiceChannel) return message.channel.send('You must be in my audio room :microphone2:');
-        if (isPlaying == false) return message.channel.send('**Done , :white_check_mark: **');
+        if (isPlaying == true) return message.channel.send('**Done , :white_check_mark: **'); //////////\\\\\\\\
 message.channel.send('**Now playing :** ${videoInfo.title} :musical_note:')
     }
 });
@@ -148,7 +148,7 @@ function playMusic(id, message) {
             if (queue.length === 0) {
                 queue = [];
                 queueNames = [];
-                isPlaying = false;
+                isPlaying = true; ////////////\\\\\\\\
             }
             else {
                 setTimeout(function() {
