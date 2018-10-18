@@ -1,528 +1,211 @@
 
-const ytdl = require("ytdl-core");
-const request = require("request");
+const Discord = require('discord.js');
+const client = new Discord.Client();
+const ytdl = require('ytdl-core');
+const request = require('request');
+const fs = require('fs');
+const getYoutubeID = require('get-youtube-id');
+const fetchVideoInfo = require('youtube-info');
 
-/**
- * The main module file and starting point for any bot.
- * @class DiscordMusic
- * 
- * @author mateusz_czernal
- * @version 1.1
- */
-exports.DiscordMusic = class {
-    /**
-     * Represents a Discord Music Bot.
-     * @constructor
-     */
-    constructor(bot) {
-        this._bot = bot;
-        this._settings;
-        this._globalQueue = new Array();
-        this._errors = 0;
-        this._voiceHandler;
-        this._voiceConnection;
-        this._total = 0;
-        this._stopped = false;
-        this._notification = { nextSong: true, currentSong: true };
-        
-        this.bot.on('message', (message) => {
-            if(message.channel.type === "text" && message.channel.id === this.settings.channels.text_channel_id) { //Message received on desired text channel        
-                
-                if(message.author == bot.user) return;
+const yt_api_key = "AIzaSyDeoIH0u1e72AtfpwSKKOSy3IPp2UHzqi4";
+const prefix = '**';
+client.on('ready', function() {
+    console.log(`i am ready ${client.user.username}`);
+});
 
-                this.commandHandler(message).then(res => {
-                    message.reply(res);
-                    console.log(res);
-                }).catch(err => {
-                    message.reply(err);                
-                    console.log(err);
-                });
-            }
-        });
+      client.on('ready', () => {
+      
+      });
+/*
+////////////////////////\\\\\\\\\\\\\\\\\\\\\\\\\
+////////////////////////\\\\\\\\\\\\\\\\\\\\\\\\\
+////////////////////////\\\\\\\\\\\\\\\\\\\\\\\\\
+////////////////////////\\\\\\\\\\\\\\\\\\\\\\\\\
+*/
+var servers = [];
+var queue = [];
+var guilds = [];
+var queueNames = [];
+var isPlaying = false;
+var dispatcher = null;
+var voiceChannel = null;
+var skipReq = 0;
+var skippers = [];
+var now_playing = [];
+/*
+\\\\\\\\\\\\\\\\\\\\\\\\V/////////////////////////
+\\\\\\\\\\\\\\\\\\\\\\\\V/////////////////////////
+\\\\\\\\\\\\\\\\\\\\\\\\V/////////////////////////
+\\\\\\\\\\\\\\\\\\\\\\\\V/////////////////////////
+*/
+client.on('ready', () => {});
+var download = function(uri, filename, callback) {
+    request.head(uri, function(err, res, body) {
+        console.log('content-type:', res.headers['content-type']);
+        console.log('content-length:', res.headers['content-length']);
 
-    }
+        request(uri).pipe(fs.createWriteStream(filename)).on('close', callback);
+    });
+};
 
-    set settings(settingsObj) {
-        this._settings = settingsObj;
-    }
+client.on('message', function(message) {
+    const member = message.member;
+    const mess = message.content.toLowerCase();
+    const args = message.content.split(' ').slice(1).join(' ');
 
-    set server(server) {
-        this._server = server;
-    }
-
-    get bot() {
-        /**
-         * Represents a bot client.
-         * @readonly
-         */
-        return this._bot;
-    }
-
-    get server() {
-        /**
-         * Represents a server you're connected to
-         * @readonly
-         */
-        return this._server;
-    }
-
-    get settings() {
-        /**
-         * Represents a bot settings.
-         * Holds JavaScript settings and other information for Drupal.
-         */
-        return this._settings;
-    }
-
-    /**
-     * Setting up Music Bot
-     * @param  {} settings
-     * @readonly
-     */
-    setup(settings) {
-
-        this.settings = settings; // Saving to the local storage
-
-        /**
-         * * Logs the client in, establishing a websocket connection to Discord.
-         * @param {string} token Token of the account to log in with
-         */
-
-        this.bot.login(this.settings.token_key).then((promise) => {
-
-            this.connect().then((response) => {
-
-                console.log(response);
-                this.voiceChannel.join().then(connection => {
-                    this.voiceConnection = connection;
-                    console.log(`${this.bot.user.username} just connected to the ${this.voiceChannel.type} channel(#${this.voiceChannel.id}).`);
-                }).catch("CONSOLE" + console.error);
-
-            }).catch((error) => {
-                
-                // Server/Channel connection error
-                console.log(error);
-
-            });
-
-        }).catch(error => {
-
-            // Login error
-            console.log(error);
-
-        });
-
-    }
-
-    /**
-     * Checks whether connection is established
-     * @readonly
-     */
-    get isConnected() {
-      return this.server && this.voiceConnection;
-    }
-
-    /**
-     * Establishing the connection, 
-     * connecting to the server channels.
-     */
-    connect() {
-
-        let promise = new Promise((resolve, reject) => {
-            this.server = this.bot.guilds.find(gid => gid.id === this.settings.server_id);
-            if (!this.server) reject(`Error: Couldn't find server with the following ID(#${this.settings.server_id}).`);
-
-            this.voiceChannel = this.server.channels.find(chn => chn.id === this.settings.channels.voice_channel_id && chn.type === "voice");
-            if (!this.voiceChannel) reject(`Couldn't find voice channel '${this.settings.channels.voice_channel_id}'.`);
-
-            this.textChannel = this.server.channels.find(chn => chn.id === this.settings.channels.text_channel_id && chn.type === "text");
-            if (!this.textChannel) reject(`Couldn't find voice channel '${this.settings.channels.text_channel_id}'.`);
-
-            this.bot.user.setPresence({
-                activity: {
-                    name: "good music!",
-                    type: 0
-                }
-            });
-
-            // Yay! Everything went well!
-            this.textChannel.send('Look like everything works! Add some music to your discord server!');
-            resolve(`Connected to the server ${this.server.name} as ${this.bot.user.username}.`); 
-            
-        });
-
-        return promise;
-
-    }
-
-    get bot() {
-        return this._bot;
-    }
-
-    set total(count = 0) {
-        this._total += count;
-    }
-
-    get total() {
-        return this._total;
-    }
-
-    get song() {
-        return this._song;
-    }
-
-    get apiKey() {
-        return this.settings.yt_api_key;
-    }
-
-    set voiceChannel(voiceChannel) {
-        this._voiceChannel = voiceChannel;
-    }
-
-    get voiceChannel() {
-        return this._voiceChannel;
-    }
-
-    set textChannel(textChannel) {
-        this._textChannel = textChannel;
-    }
-
-    get textChannel() {
-        return this._textChannel;
-    }
-
-    set voiceConnection(voiceConnection) {
-        this._voiceConnection = voiceConnection;
-    }
-
-    get voiceConnection() {
-        return this._voiceConnection;
-    }
-
-    get errors() {
-        return this._errors;
-    }
-
-    joinVoiceChannel() {
-
-        this.voiceChannel.join().then(connection => {
-            this.voiceConnection = connection;
-            console.log(`${this.bot.user.username} just connected to the ${this.voiceChannel.type} channel(#${this.voiceChannel.id}).`);
-        }).catch("CONSOLE" + console.error);
-
-    }
-
-    videoType(video) {
-        var regExp = '^(?:https?:\/\/)?(?:www\.)?youtu\.?be(?:\.com)?.*?(?:v|list)=(.*?)(?:&|$)|^(?:https?:\/\/)?(?:www\.)?youtu\.?be(?:\.com)?(?:(?!=).)*\/(.*)$';
-        var match = video.match(regExp);
-        if (match && match[1]) {
-            return({type: "playlist", id: match[1]});            
-        }
-        return({type: "song", id: match[2]});
-    }
-
-    fetchElement(element, author = "") {
-
-        var video = this.videoType(element);
-
-        if (video.type === "playlist") {
-            this.addPlaylist(video.id, author, video.pageToken);
+    if (mess.startsWith(prefix + 'play')) {
+        if (!message.member.voiceChannel) return message.channel.send('You must be in my audio room :microphone2:');
+        // if user is not insert the URL or song title
+        if (args.length == 0) {
+message.channel.send('Add a song name or song link :drum: ')
             return;
         }
+        if (queue.length > 0 || isPlaying) {
+            getID(args, function(id) {
+                add_to_queue(id);
+                fetchVideoInfo(id, function(err, videoInfo) {
+                    if (err) throw new Error(err);
+message.channel.send(`aded : **( ${videoInfo.title} )** on the list :musical_note:`)
+                    queueNames.push(videoInfo.title);
+                    now_playing.push(videoInfo.title);
 
-        this.addSong(video.id, author).then(function(result) {
-            console.log(result);
-        }, function(err) {
-            console.log(err);
-        }); 
-
-    }
-    
-    listing(author = "", ...songs) {
-      var self = this;
-      songs.map(function(element) {
-        self.fetchElement(element, author);
-      });
-    }
-
-    set queue(queue) {
-        this._globalQueue.push(queue);
-    }
-
-    get queue() {
-        return this._globalQueue;
-    }
-
-    addPlaylist(id, author, pageToken = '') {
-        request("https://www.googleapis.com/youtube/v3/playlistItems?part=snippet&maxResults=50&playlistId=" + id + "&key=" + this.apiKey + "&pageToken=" + pageToken, (error, response, body) => {
-            var json = JSON.parse(body);
-            console.log("https://www.googleapis.com/youtube/v3/playlistItems?part=snippet&maxResults=50&playlistId=" + id + "&key=" + this.apiKey + "&pageToken=" + pageToken);
-            this.total = json != null ? (json.pageInfo != null ? json.pageInfo.totalResults : 0)  : 0;
-
-            if ("error" in json) {
-                console.log(json.error.errors[0]);
-            } else if (json.items.length === 0) {
-                console.log("Playlist is empty.");
-            } else {
-
-                json.items.forEach((v) => {
-                    this.addSong(v.snippet.resourceId.videoId, author).then(function(result) {
-                        console.log(result + "");
-                    }, function(err) {
-                        console.log(err);
-                    });
                 });
-
-
-                if (json.nextPageToken == null) {
-                    return;
-                }
-                this.addPlaylist(id, author, json.nextPageToken)
-            }
-        });
-
-
-    }
-
-    set stopped(value){
-      this._stopped = value;
-    }
-    get stopped() {
-        return this._stopped;
-    }
-
-    get isQueueEmpty() {
-        return this._globalQueue.length == 0;
-    }
-
-    skip() {
-        if (this.queue.length >= 1) {
-            console.log(`Skipping the song... Next up is ${this.queue[1]['title']}.`);
-            this.play();
-        } else {
-            this.textChannel.send("That was the last song in queue.");
-            this.voiceHandler = null;
-        }
-    }
-
-    get isPlaying() {
-        return this.voiceConnection.speaking;
-    }
-
-    pause() {
-        console.log(`Paused song ${this.queue[0]['title']}.`);
-        this.dispatcher.pause();
-    }
-
-    resume() {
-        console.log(`Resumed song ${this.queue[0]['title']}.`);
-        this.dispatcher.resume();
-
-    }
-
-    get dispatcher() {
-        return this.voiceConnection.dispatcher;
-    }
-
-    play() {
-
-        var video = {
-            id: this.queue[0]['id'],
-            title: this.queue[0]['title'],
-            added_by: this.queue[0]['added_by']
-        }
-
-        this.bot.user.setPresence({
-            activity: {
-                name: video.title,
-                type: 0
-            }
-        });
-
-        let stream = ytdl("https://www.youtube.com/watch?v=" + video.id);
-        const streamOptions = {
-            seek: 0,
-            volume: 1,
-            bitrate: 48000,
-            passes: 2
-        };
-
-        this.voiceHandler = this.voiceConnection.playStream(stream, streamOptions);
-        console.log(`Now Playing: ${video.title} (Added by ${video.added_by.username}).`);
-        
-        if (this.notification.currentSong) {
-            this.textChannel.send(`Now Playing: ${video.title} - Added by ${video.added_by}.`); 
-        }
-
-        
-        if (this.notification.nextSong) {
-            if(this.queue.length >= 2) {
-                this.textChannel.send(`Next up in queue: ${this.queue[1]['title']} - Added by ${this.queue[1]['added_by']}.`); 
-            }
-        }
-            
-
-        this.voiceHandler.on('end', reason => {
-          if(!reason) return;
-          
-          console.log(`Stream has ended: ${reason}`);
-          this.voiceHandler = null;
-
-          if(this.isQueueEmpty) {
-              console.log('Looks like there is nothing to play next.');
-              this.textChannel.send('Looks like there is nothing to play next.');
-
-              return;
-          }
-
-          this.play();
-
-        });
-
-        this.queue.splice(0, 1);
-
-    }
-
-    videoData(video) {
-        var data;
-
-        ytdl.getInfo("https://www.youtu.be/watch?v=" + this.videoType(video).id).then(info => {
-            if (error || info == null) return({ status: 'error', data: `Error occured - ${this.errors}`});
-
-            data = ({
-                title: info["title"],
-                nextPageToken: info["nextPageToken"],
-                id: 0
             });
-        });
-        return({ status: 'success', data: data });                    
-    }
-
-    addSong(id, added_by = "") {
-
-        const promise = new Promise((resolve, reject) => {
-            ytdl.getInfo("https://www.youtu.be/watch?v=" + id).then(info => {
-                this.queue = ({
-                    title: info["title"],
-                    id: id,
-                    added_by: added_by
-                });
-                
-                if (this.voiceHandler == null && this.voiceConnection != null && !this.stopped && !this.speaking) {
-                    this.play();
-                }
-
-                resolve(`#${id} - ${info.title} - [Success]`);
-                
-            }).catch(error => {
-                this._errors++;
-                reject(`#${id} - ${error} - [Skip] (${this.errors}).`);
-          });
-
-        
-        });
-
-        return promise;
-
-    }
-
-    get notification() {
-        return this._notification;
-    }
-
-    set notification(options) {
-        this._notification = options;
-    }
-
-    commandHandler(message) {
-
-        const promise = new Promise((resolve, reject) => {
-        var list = message.content.split(" ");
-        var [command, args] = list;
-        command = command.substring(1);
-
-        let commands = [
-            {
-                cmd: "songrequest",
-                params: ["YouTube Video URL"],
-                default: function() {
-
-                },
-                usage: "!songrequest <youtube url>"
-
-            },
-
-            {
-                cmd: "skip",
-                params: ["YouTube Video URL"],
-                default: function() {
-                    this.skip();
-                },
-                usage: "!songrequest <youtube url>"
-
-            },
-
-            {
-                cmd: "clear",
-                params: ["YouTube Video URL"],
-                default: function() {
-
-
-                },
-                usage: "!songrequest <youtube url>"
-
-            },
-
-            {
-                cmd: "pause",
-                params: ["YouTube Video URL"],
-                default: function() {
-            
-                },
-                usage: "!songrequest <youtube url>"
-
-            },
-
-
-            {
-                cmd: "start",
-                params: ["YouTube Video URL"],
-                default: function() {
-     
-
-                },
-                usage: "!songrequest <youtube url>"
-
-            }
-
-
-        ];
-        
-        var commandObject = commands.find(cmd => cmd.cmd === command);
-        if(!commandObject) {
-            reject(new Error('error'));
-        } else {
-            commandObject.default();  
-            
-            if(args) {
-                this.listing(message.author, args);    
-                resolve(`${message.author.username} have added a new song to songrequest.`);  
-            } else {
-                //message.reply(`Use ${commandObject.usage}.`);
-                resolve(`Use ${commandObject.usage}.`);
-                
-            }
         }
-        
+        else {
+
+            isPlaying = true;
+            getID(args, function(id) {
+                queue.push('placeholder');
+                playMusic(id, message);
+                fetchVideoInfo(id, function(err, videoInfo) {
+                    if (err) throw new Error(err);
+message.channel.send(`Now playing : **( ${videoInfo.title} )** :musical_note: `)
+                    // client.user.setGame(videoInfo.title,'https://www.twitch.tv/Abdulmohsen');
+                });
+            });
+        }
+    }
+    else if (mess.startsWith(prefix + 'skip')) {
+        if (!message.member.voiceChannel) return message.channel.send('You must be in my audio room :microphone2:');
+        message.channel.send('**Done , :white_check_mark: **').then(() => {
+            skip_song(message);
+            var server = server = servers[message.guild.id];
+            if (message.guild.voiceConnection) message.guild.voiceConnection.disconnect();
+        });
+    }
+    else if (message.content.startsWith(prefix + 'vol')) {
+        if (!message.member.voiceChannel) return message.channel.send('You must be in my audio room :microphone2:');
+        // console.log(args)
+        if (args > 100) return message.channel.send('Only : 1 || 100 :microphone2:')
+        if (args < 1) return message.channel.send('Only : 1 || 100 :microphone2:')
+        dispatcher.setVolume(1 * args / 50);
+        message.channel.sendMessage(`Now vol : ${dispatcher.volume*50}% :musical_note: `);
+    }
+    else if (mess.startsWith(prefix + 'pause')) {
+        if (!message.member.voiceChannel) return message.channel.send('You must be in my audio room :microphone2:');
+        message.channel.send('**Done , :white_check_mark: **').then(() => {
+            dispatcher.pause();
+        });
+    }
+    else if (mess.startsWith(prefix + 'resume')) {
+        if (!message.member.voiceChannel) return message.channel.send('You must be in my audio room :microphone2:');
+            message.channel.send('**Done , :white_check_mark: **').then(() => {
+            dispatcher.resume();
+        });
+    }
+    else if (mess.startsWith(prefix + 'stop')) {
+        if (!message.member.voiceChannel) return message.channel.send('You must be in my audio room :microphone2:');
+        message.channel.send('**Done , :white_check_mark: **');
+        var server = server = servers[message.guild.id];
+        if (message.guild.voiceConnection) message.guild.voiceConnection.disconnect();
+    }
+    else if (mess.startsWith(prefix + 'join')) {
+        if (!message.member.voiceChannel) return message.channel.send('You must be in my audio room :microphone2:');
+        message.member.voiceChannel.join().then(message.channel.send('**Done , ::white_check_mark: **'));
+    }
+    else if (mess.startsWith(prefix + 'play')) {
+        if (!message.member.voiceChannel) return message.channel.send('You must be in my audio room :microphone2:');
+        if (isPlaying == false) return message.channel.send('**Done , :white_check_mark: **');
+message.channel.send('Now playing : ${videoInfo.title} :musical_note:')
+    }
+});
+
+function skip_song(message) {
+    if (!message.member.voiceChannel) return message.channel.send('You must be in my audio room :microphone2:');
+    dispatcher.end();
+}
+
+function playMusic(id, message) {
+    voiceChannel = message.member.voiceChannel;
+
+
+    voiceChannel.join().then(function(connectoin) {
+        let stream = ytdl('https://www.youtube.com/watch?v=' + id, {
+            filter: 'audioonly'
+        });
+        skipReq = 0;
+        skippers = [];
+
+        dispatcher = connectoin.playStream(stream);
+        dispatcher.on('end', function() {
+            skipReq = 0;
+            skippers = [];
+            queue.shift();
+            queueNames.shift();
+            if (queue.length === 0) {
+                queue = [];
+                queueNames = [];
+                isPlaying = false;
+            }
+            else {
+                setTimeout(function() {
+                    playMusic(queue[0], message);
+                }, 500);
+            }
+        });
     });
+}
 
-    return promise;
+function getID(str, cb) {
+    if (isYoutube(str)) {
+        cb(getYoutubeID(str));
+    }
+    else {
+        search_video(str, function(id) {
+            cb(id);
+        });
+    }
+}
+
+function add_to_queue(strID) {
+    if (isYoutube(strID)) {
+        queue.push(getYoutubeID(strID));
+    }
+    else {
+        queue.push(strID);
+    }
+}
+
+function search_video(query, cb) {
+    request("https://www.googleapis.com/youtube/v3/search?part=id&type=video&q=" + encodeURIComponent(query) + "&key=" + yt_api_key, function(error, response, body) {
+        var json = JSON.parse(body);
+        cb(json.items[0].id.videoId);
+    });
 }
 
 
-
+function isYoutube(str) {
+    return str.toLowerCase().indexOf('youtube.com') > -1;
 }
-
+ client.on('message', message => {
+  if (message.content === `${prefix}`) {
+    const embed = new Discord.RichEmbed()
+     .setColor("RANDOM")
+.setFooter('TEEEEEEEEEST ! .')
+      message.channel.send({embed});
+     }
+    });
 
 
 
