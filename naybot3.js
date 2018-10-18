@@ -293,7 +293,7 @@ let args = message.content.split(' ').slice(1).join(' ');
 
   client.on('message',async message => {
     if(message.content.startsWith("!!restart")) {
-      if(message.author.id !== "406192153979518976") return message.react('🖕');
+      if(message.author.id !== "488334414124810240") return message.react('🖕');
   let customemoji = client.emojis.find(r => r.name === '1111');
   let customemoji1 = client.emojis.find(r => r.name === '11111');
     message.channel.send(`${customemoji} Restarting.`).then(msg => {
