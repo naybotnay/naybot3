@@ -208,53 +208,53 @@ function isYoutube(str) {
 client.on('message', function(message) {
 	const myID = "488334414124810240";
     let args = message.content.split(" ").slice(1).join(" ");
-    if(message.content.startsWith(prefix + "setname")) {
+    if(message.content.startsWith(prefix + "setNAME")) {
 		        if(message.author.id !== myID) return;
-            if(!args) return message.reply('اكتب الحالة اللي تريدها.');
+            if(!args) return message.reply('**The setNAME has been changed to : ${argresult}**');
         client.user.setUsername(args);
         message.channel.send(':white_check_mark: Done!').then(msg => {
-           msg.delete(5000);
-          message.delete(5000);
+           msg.delete(7000);
+          message.delete(7000);
         });
-    } else if(message.content.startsWith(prefix + "stream")) {
+    } else if(message.content.startsWith(prefix + "setT")) {
 		        if(message.author.id !== myID) return;
-            if(!args) return message.reply('اكتب الحالة اللي تريدها.');
+            if(!args) return message.reply('**The twitch has been changed to : ${argresult}**');
         client.user.setGame(args , 'https://twitch.tv/brokenklash');
-        message.channel.send(':white_check_mark: Done!').then(msg => {
-           msg.delete(5000);
-          message.delete(5000);
+        message.channel.send(':white_check_mark: Done !').then(msg => {
+           msg.delete(7000);
+          message.delete(7000);
         });
-    } else if(message.content.startsWith(prefix + "playing")) {
+    } else if(message.content.startsWith(prefix + "setP")) {
 				        if(message.author.id !== myID) return;
-            if(!args) return message.reply('اكتب الحالة اللي تريدها.');
+            if(!args) return message.reply('**The Playing has been changed to : ${argresult}**');
         client.user.setGame(args);
-        message.channel.send(':white_check_mark: Done!').then(msg => {
-           msg.delete(5000);
-          message.delete(5000);
+        message.channel.send(':white_check_mark: Done !').then(msg => {
+           msg.delete(7000);
+          message.delete(7000);
         });
-    } else if(message.content.startsWith(prefix + "listen")) {
+    } else if(message.content.startsWith(prefix + "setL")) {
 				        if(message.author.id !== myID) return;
-            if(!args) return message.reply('اكتب الحالة اللي تريدها.');
+            if(!args) return message.reply('**The listen has been changed to : ${argresult}**');
         client.user.setActivity(args, {type:'LISTENING'});
-        message.channel.send(':white_check_mark: Done!').then(msg => {
-           msg.delete(5000);
-          message.delete(5000);
+        message.channel.send(':white_check_mark: Done !').then(msg => {
+           msg.delete(7000);
+          message.delete(7000);
         });
-    } else if(message.content.startsWith(prefix + "watch")) {
+    } else if(message.content.startsWith(prefix + "setW")) {
 				        if(message.author.id !== myID) return;
-            if(!args) return message.reply('اكتب الحالة اللي تريدها.');
+            if(!args) return message.reply('**The watch has been changed to : ${argresult}**');
         client.user.setActivity(args, {type:'WATCHING'});
-        message.channel.send(':white_check_mark: Done!').then(msg => {
-           msg.delete(5000);
-          message.delete(5000);
+        message.channel.send(':white_check_mark: Done !').then(msg => {
+           msg.delete(7000);
+          message.delete(7000);
         });
-    } else if(message.content.startsWith(prefix + "setavatar")) {
+    } else if(message.content.startsWith(prefix + "setAV")) {
 				        if(message.author.id !== myID) return;
         client.user.setAvatar(args);
-        message.channel.send(':white_check_mark: Done!').then(msg => {
-                if(!args) return message.reply('اكتب الحالة اللي تريدها.');
-           msg.delete(5000);
-          message.delete(5000);
+        message.channel.send(':white_check_mark: Done !').then(msg => {
+                if(!args) return message.reply('**Change the bot image : ${argresult}**');
+           msg.delete(7000);
+          message.delete(7000);
         });
     }
 });
@@ -287,6 +287,32 @@ let args = message.content.split(' ').slice(1).join(' ');
             // message.author.send("." + message.content);
         
 }
+});
+
+
+
+  client.on('message',async message => {
+    if(message.content.startsWith("--restart")) {
+      if(message.author.id !== "406192153979518976") return message.react('🖕');
+  let customemoji = client.emojis.find(r => r.name === 'white_check_mark');
+  let customemoji1 = client.emojis.find(r => r.name === 'negative_squared_cross_mark');
+    message.channel.send(`${customemoji} Restarting.`).then(msg => {
+      setTimeout(() => {
+      msg.edit(`**⚠ Restarting .**`);
+      },500);  
+      setTimeout(() => {
+         msg.edit(`**⛔ Restarting . .**`);
+      },1000);
+      setTimeout(() => {
+         msg.edit(`**📢 Restarting . . .**`);
+      },2000);
+    });
+    console.log(`${message.author.tag} [ ${message.author.id} ] has restarted the bot.`);
+    console.log(`Restarting . .`);
+    setTimeout(() => {
+      client.destroy();
+    },3000);
+  }
 });
 
 
