@@ -39,7 +39,7 @@ client.on("message", function (message){
     }
 
 if(mess.startsWith(prefix + "play")) {
-    if(member.voiceChannel || client.guilds.get("488334414124810240").voiceConnection != null){
+    if(member.voiceChannel || client.guilds.get("487982547729383424").voiceConnection != null){
         if(guilds[message.guild.id].queue.length > 0 || guilds[message.guild.id].isPlaying) {
         getID(args, function (id){
             add_to_queue(id, message);
