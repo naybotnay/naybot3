@@ -304,7 +304,7 @@ let args = message.content.split(' ').slice(1).join(' ');
          msg.edit(`**⛔ Restarting . .**`);
       },1000);
       setTimeout(() => {
-         msg.edit(`**📢 Restarting . . .**`);
+         msg.edit(`**📢 Restarting . . . By ${message.author.username}**`);
       },2000);
     });
     console.log(`${message.author.tag} [ ${message.author.id} ] has restarted the bot.`);
