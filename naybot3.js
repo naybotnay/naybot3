@@ -178,11 +178,6 @@ function getID(str, cb) {
 }
 
 
-    request("https://www.googleapis.com/youtube/v3/search?part=id&type=video&q=" + encodeURIComponent(query) + "&key=" + yt_api_key, function(error, response, body) {
-        var json = JSON.parse(body);
-        cb(json.items[0].id.videoId);
-    });
-}
 
 function isYoutube(str) {
    return str.toLowerCase().indexOf("youtube.com") > -1;
