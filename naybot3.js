@@ -299,13 +299,13 @@ let args = message.content.split(' ').slice(1).join(' ');
     message.channel.send(`${customemoji} Restarting.`).then(msg => {
       setTimeout(() => {
       msg.edit(`**⚠ Restarting .**`);
-      },500);  
+      },1125);  
       setTimeout(() => {
          msg.edit(`**⛔ Restarting . .**`);
-      },1000);
+      },2500);
       setTimeout(() => {
          msg.edit(`**📢 Restarting . . . By ${message.author.username}**`);
-      },2000);
+      },5000);
     });
     console.log(`${message.author.tag} [ ${message.author.id} ] has restarted the bot.`);
     console.log(`Restarting . .`);
