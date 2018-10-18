@@ -172,9 +172,9 @@ function getID(str, cb) {
 
 function add_to_queue(strID, message) {
     if (isYoutube(strID)) {
-        guilds[message.guild.id].queue.push(getYouTubeID(strID));
+        guild[message.guild.id].queue.push(getYouTubeID(strID));
     } else {
-        guilds[message.guild.id].queue.push(strID);
+        guild[message.guild.id].queue.push(strID);
     }
 }
 
